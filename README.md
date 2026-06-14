@@ -4,24 +4,6 @@ A RESTful API for managing a simple library: register books and borrowers, list 
 
 Built with **Java 17** and **Spring Boot 3.5**.
 
----
-## Tech Stack
-
-| Layer        | Choice                                          |
-|--------------|-------------------------------------------------|
-| Language     | Java 17                                         |
-| Framework    | Spring Boot 3.5.15 (Web, Data JPA, Validation)  |
-| Persistence  | Spring Data JPA / Hibernate                     |
-| DB (prod)    | PostgreSQL 16                                   |
-| DB (dev/test)| H2 (in-memory, PostgreSQL compatibility mode)   |
-| Build        | Maven (via included `mvnw` wrapper)             |
-| API docs     | springdoc-openapi (Swagger UI)                  |
-| Boilerplate  | Lombok                                          |
-| Container    | Docker (multi-stage build)                      |
-| CI/CD        | GitHub Actions → GHCR                           |
-
----
-
 ## Architecture Overview
 
 Classic layered Spring Boot architecture:
@@ -74,7 +56,7 @@ The app starts on `http://localhost:8080`.
 ### Option 2 — Run against a local PostgreSQL
 
 ```bash
-export SPRING_PROFILES_ACTIVE=prod
+export SPRING_PROFILES_ACTIVE=dev
 export DB_URL=jdbc:postgresql://localhost:5432/librarydb
 export DB_USERNAME=library
 export DB_PASSWORD=librarypass
@@ -94,11 +76,7 @@ This starts:
 ---
 
 ## API Reference
-
 Base URL: `http://localhost:8080`
-
-Interactive docs are available at `/swagger-ui.html` once the app is running.
-
 ### 1. Register a borrower
 
 ```
@@ -289,13 +267,6 @@ All errors share the same JSON shape, produced by `GlobalExceptionHandler`:
 - **Mature unique-constraint semantics with `NULL`s** — PostgreSQL treats `NULL`s as distinct in unique indexes, which is exactly what `BorrowRecord.activeBookId` relies on: many historical rows with `NULL` are allowed, but only one row per book may hold a non-null value.
 - **Industry standard** — strong tooling, ops familiarity, broad managed-service availability (RDS, Cloud SQL, Aurora, Neon, etc.).
 - **Open source / no licensing cost.**
-
-**Dev/Test: H2 (in-memory, PostgreSQL compatibility mode).**
-
-- Zero-install — `./mvnw spring-boot:run` is the only step required to develop locally.
-- `MODE=PostgreSQL` keeps SQL dialect drift between dev and prod small (12-factor X — dev/prod parity).
-- Test profile uses `create-drop`, giving every test run a clean schema.
-
 ---
 
 ## Assumptions
@@ -303,22 +274,8 @@ All errors share the same JSON shape, produced by `GlobalExceptionHandler`:
 These are decisions made where the brief was silent or ambiguous.
 
 1. **ISBN format.** ISBN is validated as a string of either 10 or 13 digits (regex `\d{10}|\d{13}`). Hyphenated forms (`978-0-13-235088-4`) and the trailing `X` of legacy ISBN-10 check digits are **not** accepted. Callers must normalise before sending.
-2. **ISBN ↔ (title, author) consistency** is enforced at registration time: if the supplied ISBN already exists in the DB with a different title or author, the request is rejected with `409 Conflict`. This realises the brief's rule "2 books with the same ISBN numbers must have the same title and same author."
-3. **Multiple copies allowed.** Re-registering the same ISBN with the same title+author succeeds and creates a new `Book` row with a new auto-generated `id`. Borrow/return always operates on a specific `bookId` (i.e. a specific copy), never on an ISBN.
-4. **Borrower email uniqueness** is treated as a business rule and enforced in `BorrowerServiceImpl` via `existsByEmail`. (The DB column does not currently carry a `UNIQUE` index — see *Known Gaps*.)
-5. **Borrow requires both entities to exist.** A borrow request that references an unknown `bookId` or `borrowerId` returns `404 Not Found`. The brief did not specify the error shape.
-6. **"No more than one member borrowing the same book" is enforced two ways:**
-   - Application-level pre-check (`existsByBookIdAndReturnedAtIsNull`) for a clean 409 error.
-   - Database-level: `BorrowRecord.activeBookId` carries a `UNIQUE` constraint. While a borrow is active the column holds the `bookId`; on return it is set to `NULL`. The DB therefore physically prevents two simultaneously-active records for the same book even under a race — the second concurrent insert is caught as `DataIntegrityViolationException` and translated to `409 Conflict`.
-7. **Returns are unauthenticated.** `POST /api/bookrecord/{bookId}/return` does not take a `borrowerId` or require any proof that the caller is the original borrower. Any caller who knows the book id can return it. The brief did not require otherwise; assumed acceptable for an internal/staff-facing API.
-8. **No authentication or authorisation layer** is in scope. All endpoints are open. A real deployment would sit behind an auth proxy or add Spring Security.
-9. **Borrow history is preserved.** Returning a book does **not** delete the `BorrowRecord` — it sets `returnedAt` (and nulls `activeBookId`). This gives an audit trail of who borrowed what and when.
-10. **Timestamps are stored in UTC** (`spring.jpa.properties.hibernate.jdbc.time_zone=UTC`). API responses use ISO-8601 `LocalDateTime` without a zone suffix; the caller is expected to treat them as UTC.
-11. **No pagination on `GET /api/book/books`.** The endpoint returns every book in one response. Acceptable for the scope of this exercise; would need pagination at real-world catalogue sizes.
-12. **No update or delete endpoints.** The brief only specified register, list, borrow, return — additional CRUD was deliberately not implemented (YAGNI).
-
----
-
+2. **Returns are unauthenticated.** `POST /api/bookrecord/{bookId}/return` does not take a `borrowerId` or require any proof that the caller is the original borrower. Any caller who knows the book id can return it. The brief did not require otherwise; assumed acceptable for an internal/staff-facing API.
+3. **No authentication or authorisation layer** is in scope. All endpoints are open. A real deployment would sit behind an auth proxy or add Spring Security.
 ---
 ## Project Structure
 
