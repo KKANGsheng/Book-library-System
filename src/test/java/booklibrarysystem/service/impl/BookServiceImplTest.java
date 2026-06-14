@@ -32,7 +32,7 @@ public class BookServiceImplTest {
     @Test
     void registerBook_savesAndReturnsSuccessfully() {
         var request = new CreateBookRequest(ISBN,TITLE,AUTHOR);
-        when(bookRepository.findByisbn(ISBN)).thenReturn(null);
+        when(bookRepository.findFirstByIsbn(ISBN)).thenReturn(Optional.empty());
         when(bookRepository.save(any(Book.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
         Book result = bookService.registerBook(request);
@@ -46,7 +46,7 @@ public class BookServiceImplTest {
     void registerBook_throwException_whenIsbnExistsWithDifferentTitle() {
         var request = new CreateBookRequest(ISBN,"Python OOP", AUTHOR);
         Book existing = new Book(ISBN,TITLE,AUTHOR);
-        when(bookRepository.findByisbn(ISBN)).thenReturn(existing);
+        when(bookRepository.findFirstByIsbn(ISBN)).thenReturn(Optional.of(existing));
         assertThatThrownBy(()->bookService.registerBook(request))
                 .isInstanceOf(BookStateException.class)
                 .hasMessageContaining(ISBN);
@@ -57,7 +57,7 @@ public class BookServiceImplTest {
     void registerBook_throwException_whenIsbnExistWithDifferentAuthor() {
         var request = new CreateBookRequest(ISBN, TITLE,"ABU");
         Book existing = new Book(ISBN,TITLE,AUTHOR);
-        when(bookRepository.findByisbn(ISBN)).thenReturn(existing);
+        when(bookRepository.findFirstByIsbn(ISBN)).thenReturn(Optional.of(existing));
         assertThatThrownBy(()->bookService.registerBook(request))
                 .isInstanceOf(BookStateException.class)
                 .hasMessageContaining(ISBN);
