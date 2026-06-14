@@ -21,7 +21,7 @@ HTTP request
  Repository   (booklibrarysystem.repository)   ← Spring Data JPA interfaces
    │
    ▼
-   DB         (PostgreSQL / H2)
+   DB         (PostgreSQL — H2 used only for tests)
 ```
 
 Cross-cutting:
@@ -38,9 +38,23 @@ Cross-cutting:
 - Maven wrapper is included (`./mvnw` on Linux/macOS, `mvnw.cmd` on Windows) — no Maven install needed.
 - Docker + Docker Compose for the containerised flow.
 
-### Option 1 — Run locally with H2 (dev profile, fastest)
+### Option 1 — Run locally against a Dockerised PostgreSQL (dev profile, default)
 
-The default profile is `dev`, which uses an in-memory H2 database. No setup required.
+The default profile is `dev`, which connects to a local PostgreSQL on `localhost:5433`.
+
+**1. Start a Postgres container** (one-time):
+
+```bash
+docker run -d --name librarydb-pg \
+  -e POSTGRES_DB=librarydb \
+  -e POSTGRES_PASSWORD=mysecret \
+  -p 5433:5432 \
+  postgres:16-alpine
+```
+
+(Or `docker compose up -d db` to use the `db` service defined in `docker-compose.yml` — note that compose uses different credentials, so override them as in Option 2.)
+
+**2. Run the app:**
 
 ```bash
 ./mvnw spring-boot:run
@@ -50,16 +64,22 @@ The app starts on `http://localhost:8080`.
 
 - Swagger UI:    `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON:  `http://localhost:8080/v3/api-docs`
-- H2 console:    `http://localhost:8080/h2-console`
-  (JDBC URL: `jdbc:h2:mem:librarydb`, user: `sa`, no password)
 
-### Option 2 — Run against a local PostgreSQL
+**Querying the DB:**
+
+```bash
+docker exec -it librarydb-pg psql -U postgres -d librarydb -c "SELECT * FROM book;"
+```
+
+### Option 2 — Override DB credentials (custom Postgres instance)
+
+If you have your own Postgres running elsewhere, override the dev defaults via env vars:
 
 ```bash
 export SPRING_PROFILES_ACTIVE=dev
-export DB_URL=jdbc:postgresql://localhost:5432/librarydb
-export DB_USERNAME=library
-export DB_PASSWORD=librarypass
+export SPRING_DATASOURCE_URL=jdbc:postgresql://your-host:5432/librarydb
+export SPRING_DATASOURCE_USERNAME=youruser
+export SPRING_DATASOURCE_PASSWORD=yourpass
 
 ./mvnw spring-boot:run
 ```
@@ -71,8 +91,10 @@ docker compose up --build
 ```
 
 This starts:
-- `db` — PostgreSQL 16 on `localhost:5433` (host) → `5432` (container)
-- `app` — Spring Boot on `localhost:8080`, with `SPRING_JPA_HIBERNATE_DDL_AUTO=update` so the schema is auto-created on first run.
+- `db` — PostgreSQL 16 on `localhost:5433` (host) → `5432` (container), user `library` / password `librarypass`
+- `app` — Spring Boot on `localhost:8080` with the `prod` profile, with `SPRING_JPA_HIBERNATE_DDL_AUTO=update` so the schema is auto-created on first run.
+
+> Tests use an in-memory H2 database via the `test` profile (`application-test.properties`) — no setup required for `./mvnw test`.
 ---
 
 ## API Reference

@@ -31,7 +31,7 @@ public class BorrowServiceImpl implements BorrowService {
                 .orElseThrow(()-> new ResourceNotFoundException("Book does not exist"));
 
         if (borrowRecordRepository.existsByBookIdAndReturnedAtIsNull(book.getId())) {
-            throw new ConflictException("Book " +bookId + "is already borrowed");
+            throw new ConflictException("Book " +bookId + " is already borrowed");
         }
         BorrowRecord borrowRecord = new BorrowRecord(book,borrower, LocalDateTime.now(),null,book.getId());
 
