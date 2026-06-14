@@ -29,7 +29,7 @@ public class BookServiceImpl implements BookService {
         return bookRepository.findAll();
     }
 
-    public void duplicateBookValidate(Book existingBook, CreateBookRequest request) {
+    private void duplicateBookValidate(Book existingBook, CreateBookRequest request) {
         if (!existingBook.getTitle().equals(request.title())
                 || !existingBook.getAuthor().equals(request.author())) {
             throw new BookStateException(String.format(

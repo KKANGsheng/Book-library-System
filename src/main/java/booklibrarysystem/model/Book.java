@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
-public class Book extends  BaseEntity {
+public class Book extends BaseEntity {
     private String isbn;
     private String title;
     private String author;
