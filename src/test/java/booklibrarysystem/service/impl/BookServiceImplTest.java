@@ -70,7 +70,7 @@ public class BookServiceImplTest {
         when (bookRepository.findAll()).thenReturn(List.of(book1,book2));
         List<Book> resultList = bookService.getAllBook();
         assertThat(resultList).isNotEmpty().hasSize(2).containsExactly(book1,book2);
-        verify(bookRepository.findAll());
+        verify(bookRepository).findAll();
     }
 
 }
