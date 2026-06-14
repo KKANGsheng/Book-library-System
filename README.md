@@ -284,8 +284,6 @@ These are decisions made where the brief was silent or ambiguous.
 2. **Returns are unauthenticated.** `POST /api/bookrecord/{bookId}/return` does not take a `borrowerId` or require any proof that the caller is the original borrower. Any caller who knows the book id can return it. The brief did not require otherwise; assumed acceptable for an internal/staff-facing API.
 3. **No authentication or authorisation layer** is in scope. All endpoints are open. A real deployment would sit behind an auth proxy or add Spring Security.
 ---
-
----
 ## Project Structure
 
 ```
