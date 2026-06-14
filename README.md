@@ -267,13 +267,6 @@ All errors share the same JSON shape, produced by `GlobalExceptionHandler`:
 - **Mature unique-constraint semantics with `NULL`s** — PostgreSQL treats `NULL`s as distinct in unique indexes, which is exactly what `BorrowRecord.activeBookId` relies on: many historical rows with `NULL` are allowed, but only one row per book may hold a non-null value.
 - **Industry standard** — strong tooling, ops familiarity, broad managed-service availability (RDS, Cloud SQL, Aurora, Neon, etc.).
 - **Open source / no licensing cost.**
-
-**Dev/Test: H2 (in-memory, PostgreSQL compatibility mode).**
-
-- Zero-install — `./mvnw spring-boot:run` is the only step required to develop locally.
-- `MODE=PostgreSQL` keeps SQL dialect drift between dev and prod small (12-factor X — dev/prod parity).
-- Test profile uses `create-drop`, giving every test run a clean schema.
-
 ---
 
 ## Assumptions
