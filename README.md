@@ -279,10 +279,9 @@ All errors share the same JSON shape, produced by `GlobalExceptionHandler`:
 
 **Production: PostgreSQL.**
 
-- **ACID guarantees** — borrowing must be atomic. The "no two active borrows of the same book" rule depends on transactional consistency *and* a unique constraint that the DB enforces even under concurrent requests.
-- **Mature unique-constraint semantics with `NULL`s** — PostgreSQL treats `NULL`s as distinct in unique indexes, which is exactly what `BorrowRecord.activeBookId` relies on: many historical rows with `NULL` are allowed, but only one row per book may hold a non-null value.
-- **Industry standard** — strong tooling, ops familiarity, broad managed-service availability (RDS, Cloud SQL, Aurora, Neon, etc.).
-- **Open source / no licensing cost.**
+"This project uses PostgreSQL because the domain is relational — Book, Borrower, and BorrowRecord are linked by foreign keys, the borrow/return operations need ACID transactions, and a unique constraint on active_book_id is what makes concurrent borrows safe. PostgreSQL enforces all three at the database layer, so the Java code can stay
+simple."
+
 ---
 
 ## Assumptions
