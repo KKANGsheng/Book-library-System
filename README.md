@@ -62,9 +62,6 @@ docker run -d --name librarydb-pg \
 
 The app starts on `http://localhost:8080`.
 
-- Swagger UI:    `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON:  `http://localhost:8080/v3/api-docs`
-
 **Querying the DB:**
 
 ```bash
