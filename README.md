@@ -279,8 +279,8 @@ All errors share the same JSON shape, produced by `GlobalExceptionHandler`:
 
 **Production: PostgreSQL.**
 
-"This project uses PostgreSQL because the domain is relational — Book, Borrower, and BorrowRecord are linked by foreign keys, the borrow/return operations need ACID transactions, and a unique constraint on active_book_id is what makes concurrent borrows safe. PostgreSQL enforces all three at the database layer, so the Java code can stay
-simple."
+This project uses PostgreSQL because the domain is relational — Book, Borrower, and BorrowRecord are linked by foreign keys, the borrow/return operations need ACID transactions, and a unique constraint on active_book_id is what makes concurrent borrows safe. PostgreSQL enforces all three at the database layer, so the Java code can stay
+simple.
 
 ---
 
