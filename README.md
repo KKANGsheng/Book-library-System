@@ -253,9 +253,6 @@ All entities extend `BaseEntity` which provides `id` (auto-generated), `createdT
 | borrowedAt     | LocalDateTime | set on borrow                                                         |
 | returnedAt     | LocalDateTime | `null` while active, set on return                                    |
 | activeBookId   | Long          | `bookId` while borrow is active, `NULL` after return — **unique**     |
-
-The unique constraint on `active_book_id` is the database-level guard that prevents two simultaneously-active records for the same book (see *Assumptions #6*).
-
 ---
 
 ## Error Format
