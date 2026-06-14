@@ -8,9 +8,7 @@ import booklibrarysystem.service.BookService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -20,8 +18,8 @@ public class BookServiceImpl implements BookService {
     @Override
     @Transactional
     public Book registerBook(CreateBookRequest request) {
-        Optional<Book> bookOptional = Optional.ofNullable(bookRepository.findByisbn(request.isbn()));
-        bookOptional.ifPresent(existingBook -> duplicateBookValidate(existingBook, request));
+        bookRepository.findFirstByIsbn(request.isbn())
+                .ifPresent(existingBook -> duplicateBookValidate(existingBook, request));
         Book book = new Book(request.isbn(), request.title(), request.author());
         return bookRepository.save(book);
     }

@@ -13,10 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.lang.module.ResolutionException;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -55,6 +52,7 @@ public class BorrowServiceImpl implements BorrowService {
                 .orElseThrow(() -> new ConflictException("Book " + bookId + " is not currently borrowed."));
 
         bookRecord.setActiveBookId(null);
+        bookRecord.setReturnedAt(LocalDateTime.now());
         return borrowRecordRepository.save(bookRecord);
     }
 }
